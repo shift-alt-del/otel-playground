@@ -5,6 +5,13 @@
 - Access http://localhost:5001 to trigger kafka write.
 - Access http://localhost:16686 to play with tracings on Jaeger UI.
 
+Trace API writes Kafka.
+![TraceOnline](images/trace_online.png)
+
+Trace Kafka down stream microservices.
+![TraceOffline](images/trace_offline.png)
+
+
 ## Setup steps
 
 1. Download javaagent jar file.
