@@ -1,5 +1,6 @@
 import os
 import json
+import time
 
 import flask
 import requests
@@ -22,7 +23,7 @@ from kafka_utils import create_topic_if_not_exist
 
 provider = TracerProvider(resource=Resource.create({SERVICE_NAME: 'api'}))
 provider.add_span_processor(
-    BatchSpanProcessor(JaegerExporter(agent_host_name='localhost', agent_port=6831)))
+    BatchSpanProcessor(JaegerExporter(agent_host_name='jaeger', agent_port=6831)))
 trace.set_tracer_provider(provider)
 
 # Initialize flask app.
@@ -41,12 +42,14 @@ KafkaInstrumentor().instrument(produce_hook=produce_hook)
 # Get tracer.
 tracer = trace.get_tracer(__name__)
 
+print('wait a few seconds for kafka to startup.')
+time.sleep(5)
+
 # Initialize kafka topic
 conf = dict(bootstrap_servers=os.environ.get('DEMO_BOOTSTRAP_SERVER', 'kafka:9092'))
 topic_name = 'async-queue'
 create_topic_if_not_exist(conf, topic_name)
 producer = KafkaProducer(**conf)
-
 
 @app.route('/')
 def home():
@@ -61,4 +64,5 @@ def internal_call():
     return json.dumps({}), 200
 
 
-app.run(port=5001)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5001)

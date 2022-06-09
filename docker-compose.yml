@@ -114,6 +114,40 @@ services:
     networks:
       - tracingdemo
 
+  demo_online:
+    container_name: demo-online
+    image: shift-alt-del/otel-demo-python
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - "5001:5001"
+    command: "python3 /app/online.py"
+    environment:
+      DEMO_BOOTSTRAP_SERVER: "kafka:19092"
+    depends_on:
+      - kafka
+    networks:
+      - tracingdemo
+
+  demo_offline:
+    container_name: demo-offline
+    image: shift-alt-del/otel-demo-python
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    command: "python3 /app/offline.py"
+    environment:
+      DEMO_BOOTSTRAP_SERVER: "kafka:19092"
+    depends_on:
+      - demo_online
+    networks:
+      - tracingdemo
+
 
 networks:
   tracingdemo:
