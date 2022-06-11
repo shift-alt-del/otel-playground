@@ -46,3 +46,4 @@ Trace Kafka down stream microservices.
 ## References:
 
 - https://opentelemetry.io/docs/instrumentation/python/getting-started/
+- https://open-telemetry.github.io/
