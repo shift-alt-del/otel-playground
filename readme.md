@@ -2,11 +2,12 @@
 
 ## What's this repo about
 
-- [x] Trace producer/consumer app.
-- [x] Trace ksqlDB/Kafka-Stream app.
-- [ ] Trace Kafka Connect.
-- [ ] End-to-end: API... Kafka... Python App... KsqlDB... Connect...
-- [ ] Metrics API
+- [x] Trace API service write Kafka async, show streaming aggregated report. 
+- [x] Trace simple producer/consumer app.
+- [x] Trace ksqlDB/Kafka-Stream.
+- [x] Trace Kafka Connect.
+- [x] Trace full end-to-end: API -> Kafka -> Python App -> KsqlDB -> Connect.
+- [ ] Metric.
 
 Trace API writes Kafka.
 ![TraceOnline](images/trace_online.png)
@@ -21,15 +22,23 @@ Trace Kafka down stream microservices.
       curl -o ./agents/opentelemetry-javaagent.jar https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v1.14.0/opentelemetry-javaagent.jar
       ```
 
-## Service startup
-1. Bring services up.
+2. Install kafka-connect-jdbc connector. Check how to install confluent-hub [here](https://docs.confluent.io/home/connect/confluent-hub/client.html)
+   1. ```
+      confluent-hub install --component-dir confluent-hub-components --no-prompt confluentinc/kafka-connect-jdbc:10.5.0
+      ```
+
+## Services & Pipelines startup
+1. Bring all services up. (`web` and `app1` needs to wait Kafka fully started, please run this command multiple times to make sure all the services turn to `Up`.)
     1. ```
        docker-compose up -d
        ```
+    2. ```
+       docker-compose ps
+       ```
 
-2. Setup Mysql
+3. Setup Mysql
     1. ```
-       docker exec -it mysql mysql -uroot -pmysql-pw
+       docker exec -it mysql mysql -uroot -pmysql-pw example-db
        ```
     2. ```
        GRANT ALL PRIVILEGES ON *.* TO 'example-user' WITH GRANT OPTION;
@@ -37,11 +46,10 @@ Trace Kafka down stream microservices.
        FLUSH PRIVILEGES;
        ``` 
     3. ```
-       use example-db;
        create table T_PV_COUNT(URL varchar(64) not null primary key);
        ```
 
-3. Create ksqlDB pipelines
+4. Create ksqlDB pipelines
     1. ```
        docker exec -it ksqldb-cli ksql http://ksqldb-server:8088
        ```
@@ -63,7 +71,7 @@ Trace Kafka down stream microservices.
        group by url emit changes;
        ```
 
-4. Create Mongodb Sink. 
+5. Create Mongodb Sink. 
    1. ```
       docker exec -it ksqldb-cli ksql http://ksqldb-server:8088
       ```
@@ -88,7 +96,15 @@ Trace Kafka down stream microservices.
       'auto.evolve'='true'
       );
       ```
-
+6. Check streams, tables and connectors are up and running.
+   1. ```
+      docker exec -it ksqldb-cli ksql http://ksqldb-server:8088
+      ```
+   2. ```
+      show streams;
+      show tables;
+      show connectors;
+      ```
 7. Access http://localhost:5001/ to trigger Kafka message write.
 8. Access http://localhost:16686/ to view traces.
 
@@ -101,6 +117,6 @@ Trace Kafka down stream microservices.
 
 ## References:
 
-- https://opentelemetry.io/docs/instrumentation/python/getting-started/
 - https://open-telemetry.github.io/
+- https://opentelemetry.io/docs/instrumentation/python/getting-started/
 - https://docs.confluent.io/kafka-connect-jdbc/current/sink-connector/index.html

@@ -145,8 +145,8 @@ services:
     networks:
       - tracingdemo
 
-  demo_online:
-    container_name: demo-online
+  web:
+    container_name: web
     image: shift-alt-del/otel-demo-python
     build:
       context: .
@@ -155,7 +155,7 @@ services:
       - .:/app
     ports:
       - "5001:5001"
-    command: "gunicorn --bind 0.0.0.0:5001 app:app"
+    command: "gunicorn --bind 0.0.0.0:5001 web:app"
     environment:
       DEMO_BOOTSTRAP_SERVER: "kafka:19092"
     depends_on:
@@ -163,19 +163,19 @@ services:
     networks:
       - tracingdemo
 
-  demo_offline:
-    container_name: demo-offline
+  app1:
+    container_name: app1
     image: shift-alt-del/otel-demo-python
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
       - .:/app
-    command: "python3 /app/offline.py"
+    command: "python3 /app/kafka_app.py"
     environment:
       DEMO_BOOTSTRAP_SERVER: "kafka:19092"
     depends_on:
-      - demo_online
+      - web
     networks:
       - tracingdemo
 

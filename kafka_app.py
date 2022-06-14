@@ -12,7 +12,7 @@ from opentelemetry.sdk.resources import Resource, SERVICE_NAME
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.trace import TracerProvider
 
-from kafka_utils import create_topic_if_not_exist
+from utils import create_topic_if_not_exist
 
 provider = TracerProvider(resource=Resource.create({SERVICE_NAME: 'kafka-app'}))
 provider.add_span_processor(BatchSpanProcessor(JaegerExporter(agent_host_name='jaeger', agent_port=6831)))

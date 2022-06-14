@@ -18,7 +18,7 @@ from opentelemetry.sdk.trace.export import (
     BatchSpanProcessor,
 )
 
-from kafka_utils import create_topic_if_not_exist
+from utils import create_topic_if_not_exist
 
 # initialize provider, jaeger exporter.
 provider = TracerProvider(resource=Resource.create({SERVICE_NAME: 'api'}))
