@@ -20,7 +20,7 @@ $(function() {
 		data: [
 		{
 			type: "line", //try changing to column, area
-			toolTipContent: "{label}: {y} mm",
+			toolTipContent: "{y} pv",
 			dataPoints: [
 			    {% for o in data %}
 			    { label: "{{o.st}}",  y: {{o.count}} },
