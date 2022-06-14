@@ -1,6 +1,8 @@
 Flask==2.1.2
 requests==2.27.1
 kafka-python==2.0.2
+mysql-connector==2.2.9
+mysql-connector-python==8.0.29
 opentelemetry-sdk==1.11.1
 opentelemetry-api==1.11.1
 opentelemetry-exporter-jaeger==1.11.1
@@ -12,3 +14,4 @@ opentelemetry-exporter-otlp-proto-http==1.11.1
 opentelemetry-instrumentation-flask
 opentelemetry-instrumentation-kafka-python
 opentelemetry-instrumentation-requests
+opentelemetry-instrumentation-mysql

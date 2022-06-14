@@ -11,6 +11,12 @@ Trace API writes Kafka.
 Trace Kafka down stream microservices.
 ![TraceOffline](images/trace_offline.png)
 
+## Task include
+- [x] Trace producer/consumer app.
+- [x] Trace ksqlDB/Kafka-Stream app.
+- [ ] Trace Kafka Connect.
+- [ ] End-to-end: API... Kafka... Python App... Stream App... Connect...
+- [ ] Metrics API
 
 ## Setup steps
 
@@ -27,14 +33,50 @@ Trace Kafka down stream microservices.
       docker exec -it ksqldb-cli ksql http://ksqldb-server:8088
       ```
    2. ```
-      create stream converted (foo string) with (kafka_topic='converted', value_format='json');
-      create table pv_count as select foo, count(*) as count from converted window tumbling (size 1 minute) group by foo emit changes;
-      create stream filter1 as select * from converted where foo <> 'xxx';
-      create stream filter2 as select * from filter1 where foo <> 'xxx';
+      create stream input_json (foo string) with (kafka_topic='converted', value_format='json');
+      create stream converted_avro with (key_format='avro', value_format='avro') as select * from input_json;
+      create table pv_count as select foo, as_value(foo) as url, as_value(windowstart) as st, as_value(windowend) as ed, count(*) as count from converted_avro window tumbling (size 1 minute) group by foo emit changes;
+      ```
+4. Setup Mysql
+   1. ```
+      docker exec -it mysql /bin/bash
+      
+      # password: mysql-pw
+      mysql -u root -p
+      
+      GRANT ALL PRIVILEGES ON *.* TO 'example-user' WITH GRANT OPTION;
+      ALTER USER 'example-user'@'%' IDENTIFIED WITH mysql_native_password BY 'example-pw';
+      FLUSH PRIVILEGES;
+      
+      create table PV_COUNT(URL varchar(64) not null primary key);
+      ```
+5. Create Mongodb Sink
+   1. ```
+      -- This will re-use ksqlDB CLI.
+      
+      CREATE SINK CONNECTOR sink_result_to_db WITH (
+      'connector.class'='io.confluent.connect.jdbc.JdbcSinkConnector',
+      'connection.url'='jdbc:mysql://mysql:3306/example-db',
+      'connection.user'='example-user',
+      'connection.password'='example-pw',
+      
+      'key.converter'='org.apache.kafka.connect.storage.StringConverter',
+      'key.converter.schema.registry.url' = 'http://schema-registry:8081',
+      'value.converter'='io.confluent.connect.avro.AvroConverter',
+      'value.converter.schema.registry.url' = 'http://schema-registry:8081',
+      
+      'insert.mode'='upsert',
+      'pk.mode'='record_key',
+      'pk.fields'='URL',
+      'fields.whitelist'='URL,ED,ST,COUNT',
+      'auto.create'='true',
+      'auto.evolve'='true',
+      'topics'='PV_COUNT'
+      );
       ```
       
-4. Access http://localhost:5001/ to trigger Kafka message write.
-5. The message above will trigger downstream applications.
+6. Access http://localhost:5001/ to trigger Kafka message write.
+7. The message above will trigger downstream applications.
 
 ## Notes:
 
@@ -47,3 +89,4 @@ Trace Kafka down stream microservices.
 
 - https://opentelemetry.io/docs/instrumentation/python/getting-started/
 - https://open-telemetry.github.io/
+- https://docs.confluent.io/kafka-connect-jdbc/current/sink-connector/index.html

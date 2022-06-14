@@ -21,14 +21,7 @@ provider.add_span_processor(
 trace.set_tracer_provider(provider)
 tracer = trace.get_tracer(__name__)
 
-
-def consume_hook(span, record, args, kwargs):
-    if span and span.is_recording():
-        span.set_attribute("kafka-consumer-hook-attribute", "heyheyhey-got-from-flask")
-
-
-# instrument kafka with produce and consume hooks
-KafkaInstrumentor().instrument(consume_hook=consume_hook)
+KafkaInstrumentor().instrument()
 
 if __name__ == '__main__':
 

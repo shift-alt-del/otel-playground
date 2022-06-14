@@ -76,13 +76,15 @@ services:
     networks:
       - tracingdemo
   ksqldb-server:
-    image: confluentinc/cp-ksqldb-server:6.2.1
+    image: confluentinc/ksqldb-server:0.25.1
     hostname: ksqldb-server
     container_name: ksqldb-server
     depends_on:
       - kafka
     volumes:
       - ./agents/opentelemetry-javaagent.jar:/tmp/opentelemetry-javaagent.jar
+      - ./confluent-hub-components/:/usr/share/kafka/plugins/
+
     ports:
       - "8088:8088"
     environment:
@@ -95,6 +97,19 @@ services:
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: 'true'
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true'
 
+      KSQL_CONNECT_GROUP_ID: "ksql-connect-cluster"
+      KSQL_CONNECT_BOOTSTRAP_SERVERS: "kafka:9092"
+      KSQL_CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      KSQL_CONNECT_VALUE_CONVERTER: "io.confluent.connect.avro.AvroConverter"
+      KSQL_CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      KSQL_CONNECT_CONFIG_STORAGE_TOPIC: "_ksql-connect-configs"
+      KSQL_CONNECT_OFFSET_STORAGE_TOPIC: "_ksql-connect-offsets"
+      KSQL_CONNECT_STATUS_STORAGE_TOPIC: "_ksql-connect-statuses"
+      KSQL_CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      KSQL_CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      KSQL_CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      KSQL_CONNECT_PLUGIN_PATH: "/usr/share/kafka/plugins"
+
       # Setup OpenTelemetry
       KSQL_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
@@ -104,13 +119,29 @@ services:
       - tracingdemo
 
   ksqldb-cli:
-    image: confluentinc/cp-ksqldb-cli:6.2.1
+    image: confluentinc/ksqldb-cli:0.25.1
     container_name: ksqldb-cli
     depends_on:
       - kafka
       - ksqldb-server
     entrypoint: /bin/sh
     tty: true
+    networks:
+      - tracingdemo
+
+  mysql:
+    image: mysql:8.0.19
+    hostname: mysql
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql-pw
+      MYSQL_DATABASE: example-db
+      MYSQL_USER: example-user
+      MYSQL_PASSWORD: example-pw
+    volumes:
+      - "./mysql/custom-config.cnf:/etc/mysql/conf.d/custom-config.cnf"
     networks:
       - tracingdemo
 
