@@ -2,43 +2,40 @@ import json
 import os
 import time
 
-from kafka.admin import NewTopic
 from opentelemetry import trace
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.instrumentation.kafka import KafkaInstrumentor
 from kafka import KafkaProducer, KafkaConsumer
 
-# Initialize provider, jaeger exporter.
+# initialize provider, jaeger exporter.
 from opentelemetry.sdk.resources import Resource, SERVICE_NAME
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.trace import TracerProvider
 
 from kafka_utils import create_topic_if_not_exist
 
-provider = TracerProvider(resource=Resource.create({SERVICE_NAME: 'offline-stage-1'}))
-provider.add_span_processor(
-    BatchSpanProcessor(JaegerExporter(agent_host_name='jaeger', agent_port=6831)))
+provider = TracerProvider(resource=Resource.create({SERVICE_NAME: 'kafka-app'}))
+provider.add_span_processor(BatchSpanProcessor(JaegerExporter(agent_host_name='jaeger', agent_port=6831)))
 trace.set_tracer_provider(provider)
 tracer = trace.get_tracer(__name__)
 
 KafkaInstrumentor().instrument()
 
+INPUT_TOPIC_NAME = 'async-queue'
+OUTPUT_TOPIC_NAME = 'async-queue-enriched'
 if __name__ == '__main__':
-
-    print('wait a few seconds for kafka to startup.')
-    time.sleep(5)
 
     conf = dict(bootstrap_servers=os.environ.get('DEMO_BOOTSTRAP_SERVER', 'kafka:9092'))
 
     # make sure topic exist
-    input_topic = 'async-queue'
-    output_topic = 'converted'
-    create_topic_if_not_exist(conf, input_topic)
-    create_topic_if_not_exist(conf, output_topic)
+    create_topic_if_not_exist(conf, INPUT_TOPIC_NAME)
+    create_topic_if_not_exist(conf, OUTPUT_TOPIC_NAME)
 
     producer = KafkaProducer(**conf)
-    consumer = KafkaConsumer(input_topic, group_id='my-group', **conf)
+    consumer = KafkaConsumer(INPUT_TOPIC_NAME, group_id='my-group', **conf)
+
+    # to demo how different languages handling traces.
+    # this app will consume and produce data in python, downstream will be Java or some languages else.
     for message in consumer:
-        print(message)
-        # time.sleep(0.2)
-        producer.send(output_topic, json.dumps({'foo': 'bar'}).encode('utf-8'))
+        # todo: enriched data, calling multiple databases here.
+        producer.send(OUTPUT_TOPIC_NAME, message.value)

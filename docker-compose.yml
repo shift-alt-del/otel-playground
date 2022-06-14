@@ -113,7 +113,7 @@ services:
       # Setup OpenTelemetry
       KSQL_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_RESOURCE_ATTRIBUTES: "service.name=offline-stage-2-stream"
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=ksql"
 
     networks:
       - tracingdemo

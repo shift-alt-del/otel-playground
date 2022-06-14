@@ -1,12 +1,10 @@
 import datetime
 import os
 import json
-import time
 
 import flask
 from mysql.connector.pooling import MySQLConnectionPool
 
-import mysql
 from jinja2 import Environment, FileSystemLoader
 from kafka import KafkaProducer
 from opentelemetry import trace
@@ -22,60 +20,63 @@ from opentelemetry.sdk.trace.export import (
 
 from kafka_utils import create_topic_if_not_exist
 
-# Initialize provider, jaeger exporter.
-provider = TracerProvider(
-    resource=Resource.create({SERVICE_NAME: 'api'}))
-provider.add_span_processor(
-    BatchSpanProcessor(
-        JaegerExporter(
-            agent_host_name='jaeger', agent_port=6831)))
+# initialize provider, jaeger exporter.
+provider = TracerProvider(resource=Resource.create({SERVICE_NAME: 'api'}))
+provider.add_span_processor(BatchSpanProcessor(JaegerExporter(agent_host_name='jaeger', agent_port=6831)))
 trace.set_tracer_provider(provider)
 tracer = trace.get_tracer(__name__)
 
-# Initialize flask app.
+# initialize flask app.
 app = flask.Flask(__name__)
 FlaskInstrumentor().instrument_app(app)
 KafkaInstrumentor().instrument()
 MySQLInstrumentor().instrument()
 
-# Initialize kafka topic
+# initialize kafka topic
+TOPIC_NAME = 'async-queue'
 conf = dict(bootstrap_servers=os.environ.get('DEMO_BOOTSTRAP_SERVER', 'kafka:9092'))
-topic_name = 'async-queue'
-create_topic_if_not_exist(conf, topic_name)
+create_topic_if_not_exist(conf, TOPIC_NAME)
 producer = KafkaProducer(**conf)
 
+# https://dev.mysql.com/doc/connector-python/en/connector-python-examples.html
 cnxpool = MySQLConnectionPool(
     pool_name="mypool",
     pool_size=10,
     user='example-user',
     password='example-pw',
-    host='localhost',
+    host='mysql',
     database='example-db')
 
 
-@app.route('/')
-def home():
-    values = []
-
+def query_database():
+    data = []
     cnx = cnxpool.get_connection()
     cursor = cnx.cursor()
-    cursor.execute("select st, ed, count from PV_COUNT order by st;")
+    cursor.execute("select st, ed, count from T_PV_COUNT order by st;")
     for (st, ed, count) in cursor.fetchall():
-        values.append({
+        data.append({
             'st': datetime.datetime.fromtimestamp(st // 1000),
             'ed': datetime.datetime.fromtimestamp(ed // 1000),
             'count': count,
         })
     cursor.close()
     cnx.close()
+    return data
 
-    producer.send(topic_name, json.dumps({'hello': 'world'}).encode('utf-8'))
 
-    file_loader = FileSystemLoader('.')
-    env = Environment(loader=file_loader)
-    template = env.get_template('template.jinja')
+@app.route('/')
+def home():
+    # send data to kafka for offline processing.
+    producer.send(TOPIC_NAME, json.dumps({'url': '/'}).encode('utf-8'))
 
-    return template.render(data=values), 200
+    # query aggregated data.
+    data = query_database()
+
+    # render to html with line chart.
+    return Environment(
+        loader=FileSystemLoader('.')).get_template(
+        name='template.jinja').render(
+        data=data), 200
 
 
 if __name__ == '__main__':
