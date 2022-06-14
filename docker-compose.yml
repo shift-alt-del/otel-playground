@@ -155,7 +155,7 @@ services:
       - .:/app
     ports:
       - "5001:5001"
-    command: "python3 /app/online.py"
+    command: "gunicorn --bind 0.0.0.0:5001 app:app"
     environment:
       DEMO_BOOTSTRAP_SERVER: "kafka:19092"
     depends_on:
