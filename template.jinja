@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>jQuery Line Chart</title>
+<script type="text/javascript" src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
+<script type="text/javascript">
+$(function() {
+	$(".chartContainer").CanvasJSChart({
+		title: {
+			text: "Realtime PV"
+		},
+		axisY: {
+			title: "PV",
+			includeZero: false
+		},
+		axisX: {
+			interval: 1
+		},
+		data: [
+		{
+			type: "line", //try changing to column, area
+			toolTipContent: "{label}: {y} mm",
+			dataPoints: [
+			    {% for o in data %}
+			    { label: "{{o.st}}",  y: {{o.count}} },
+			    {% endfor %}
+			]
+		}
+		]
+	});
+});
+</script>
+</head>
+<body>
+<div class="chartContainer" style="height: 300px; width: 100%;"></div>
+</body>

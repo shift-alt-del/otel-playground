@@ -1,3 +1,4 @@
+import datetime
 import os
 import json
 import time
@@ -39,8 +40,8 @@ MySQLInstrumentor().instrument()
 # Get tracer.
 tracer = trace.get_tracer(__name__)
 
-print('wait a few seconds for kafka to startup.')
-time.sleep(5)
+# print('wait a few seconds for kafka to startup.')
+# time.sleep(5)
 
 # Initialize kafka topic
 conf = dict(bootstrap_servers=os.environ.get('DEMO_BOOTSTRAP_SERVER', 'kafka:9092'))
@@ -58,8 +59,8 @@ def home():
     cursor.execute("select st, ed, count from PV_COUNT order by st;")
     for (st, ed, count) in cursor:
         values.append({
-            'st': st,
-            'ed': ed,
+            'st': datetime.datetime.fromtimestamp(st // 1000),
+            'ed': datetime.datetime.fromtimestamp(ed // 1000),
             'count': count,
         })
     cursor.close()
@@ -67,7 +68,13 @@ def home():
 
     producer.send(topic_name, json.dumps({'hello': 'world'}).encode('utf-8'))
 
-    return json.dumps({'data': values}), 200
+    from jinja2 import Environment, FileSystemLoader
+
+    file_loader = FileSystemLoader('.')
+    env = Environment(loader=file_loader)
+    template = env.get_template('template.jinja')
+
+    return template.render(data=values), 200
 
 
 if __name__ == '__main__':
