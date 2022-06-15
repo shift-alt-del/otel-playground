@@ -34,7 +34,7 @@ MySQLInstrumentor().instrument()
 
 # initialize kafka topic
 TOPIC_NAME = 'async-queue'
-conf = dict(bootstrap_servers=os.environ.get('DEMO_BOOTSTRAP_SERVER', 'kafka:9092'))
+conf = dict(bootstrap_servers=os.environ.get('DEMO_BOOTSTRAP_SERVER', 'broker:9092'))
 create_topic_if_not_exist(conf, TOPIC_NAME)
 producer = KafkaProducer(**conf)
 

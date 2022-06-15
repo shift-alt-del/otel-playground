@@ -25,7 +25,7 @@ INPUT_TOPIC_NAME = 'async-queue'
 OUTPUT_TOPIC_NAME = 'async-queue-enriched'
 if __name__ == '__main__':
 
-    conf = dict(bootstrap_servers=os.environ.get('DEMO_BOOTSTRAP_SERVER', 'kafka:9092'))
+    conf = dict(bootstrap_servers=os.environ.get('DEMO_BOOTSTRAP_SERVER', 'broker:9092'))
 
     # make sure topic exist
     create_topic_if_not_exist(conf, INPUT_TOPIC_NAME)
