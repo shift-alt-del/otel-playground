@@ -19,8 +19,13 @@ Trace Kafka down stream microservices.
 ## Environment setup
 
 1. Download javaagent jar file.
-   1. ```
+   1. Otel java agent for trace
+      ```
       curl -o ./agents/opentelemetry-javaagent.jar https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v1.14.0/opentelemetry-javaagent.jar
+      ```
+   3. JMX agent for metrics
+      ```
+      curl -o ./agents/jmx_prometheus_javaagent-0.17.0.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.17.0/jmx_prometheus_javaagent-0.17.0.jar
       ```
 
 2. Install kafka-connect-jdbc connector. Check how to install confluent-hub [here](https://docs.confluent.io/home/connect/confluent-hub/client.html)
@@ -127,3 +132,4 @@ Trace Kafka down stream microservices.
 - https://open-telemetry.github.io/
 - https://opentelemetry.io/docs/instrumentation/python/getting-started/
 - https://docs.confluent.io/kafka-connect-jdbc/current/sink-connector/index.html
+- https://github.com/prometheus/jmx_exporter
