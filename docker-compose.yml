@@ -180,5 +180,30 @@ services:
     networks:
       - tracingdemo
 
+  prometheus:
+    container_name: prometheus
+    hostname: prometheus
+    image: prom/prometheus:v2.1.0
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+    networks:
+      - tracingdemo
+
+  grafana:
+    container_name: grafana
+    hostname: grafana
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
+    networks:
+      - tracingdemo
+
 networks:
   tracingdemo:

@@ -3,21 +3,6 @@ receivers:
         protocols:
             grpc:
             http:
-    prometheus:
-        config:
-            global:
-                scrape_interval: 30s
-                scrape_timeout: 30s
-
-            scrape_configs:
-                - job_name: "ksqlDB metrics"
-                  static_configs:
-                      - targets: [ "ksqldb-server:9999" ]
-                  relabel_configs:
-                      - source_labels: [ __address__ ]
-                        target_label: hostname
-                        regex: '([^:]+)(:[0-9]+)?'
-                        replacement: '${1}'
 
 exporters:
     logging:
@@ -34,7 +19,3 @@ service:
             receivers: [otlp]
             processors: [batch]
             exporters: [jaeger]
-        metrics:
-            receivers: [prometheus]
-            processors: [batch]
-            exporters: [logging]

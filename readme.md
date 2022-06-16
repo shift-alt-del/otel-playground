@@ -133,3 +133,4 @@ Trace Kafka down stream microservices.
 - https://opentelemetry.io/docs/instrumentation/python/getting-started/
 - https://docs.confluent.io/kafka-connect-jdbc/current/sink-connector/index.html
 - https://github.com/prometheus/jmx_exporter
+- https://confluent.io/blog/monitor-kafka-clusters-with-prometheus-grafana-and-confluent/
