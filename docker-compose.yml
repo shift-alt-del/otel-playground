@@ -146,6 +146,17 @@ services:
     networks:
       - tracingdemo
 
+  mysqld-exporter:
+    image: prom/mysqld-exporter
+    hostname: mysqld_exporter
+    container_name: mysqld_exporter
+    ports:
+      - "9104:9104"
+    environment:
+      DATA_SOURCE_NAME: "example-user:example-pw@mysql:3306/"
+    networks:
+      - tracingdemo
+
   web:
     container_name: web
     image: shift-alt-del/otel-demo-python
