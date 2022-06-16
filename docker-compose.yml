@@ -88,7 +88,6 @@ services:
       - ./metrics/:/tmp/metrics/
     ports:
       - "8088:8088"
-      - "19999:19999"
     environment:
       KSQL_BOOTSTRAP_SERVERS: "broker:19092"
       KSQL_HOST_NAME: ksqldb-server
@@ -113,7 +112,7 @@ services:
       KSQL_CONNECT_PLUGIN_PATH: "/usr/share/kafka/plugins"
 
       # Setup OpenTelemetry
-      KSQL_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar -javaagent:/tmp/jmx_prometheus_javaagent-0.17.0.jar=19999:/tmp/metrics/prometheus/confluent_ksql.yml"
+      KSQL_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar -javaagent:/tmp/jmx_prometheus_javaagent-0.17.0.jar=9999:/tmp/metrics/prometheus/confluent_ksql.yml"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_RESOURCE_ATTRIBUTES: "service.name=ksql"
 
@@ -180,7 +179,6 @@ services:
       - web
     networks:
       - tracingdemo
-
 
 networks:
   tracingdemo:
