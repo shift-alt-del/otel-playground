@@ -153,7 +153,7 @@ services:
     ports:
       - "9104:9104"
     environment:
-      DATA_SOURCE_NAME: "example-user:example-pw@mysql:3306/"
+      DATA_SOURCE_NAME: "root:mysql-pw@(mysql:3306)/"
     networks:
       - tracingdemo
 
