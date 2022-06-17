@@ -10,11 +10,9 @@
 - [ ] Metric (Kafka, API, Mysql, ksqlDB).
 - [ ] Log
 
-End-to-end tracing, API to Connect.
-![End2End-Tracing](images/e2e_tracing.png)
-
-Tracing DAG.
-![Tracing-DAG](images/dag.png)
+|End-to-end tracing, API to Connect.|Tracing DAG.|
+|-----------------------------------|------------|
+|![End2End-Tracing](images/e2e_tracing.png)|![Tracing-DAG](images/dag.png)|
 
 ## Environment setup
 
