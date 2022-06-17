@@ -59,3 +59,14 @@ scrape_configs:
         target_label: hostname
         regex: '([^:]+)(:[0-9]+)?'
         replacement: '${1}'
+
+  - job_name: "connect"
+    static_configs:
+      - targets: ["connect:9999"]
+        labels:
+          env: 'dev'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: hostname
+        regex: '([^:]+)(:[0-9]+)?'
+        replacement: '${1}'

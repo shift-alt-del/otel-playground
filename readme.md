@@ -10,11 +10,11 @@
 - [ ] Metric (Kafka, API, Mysql, ksqlDB).
 - [ ] Log
 
-Trace API writes Kafka.
-![TraceOnline](images/trace_online.png)
+End-to-end tracing, API to Connect.
+![End2End-Tracing](images/e2e_tracing.png)
 
-Trace Kafka down stream microservices.
-![TraceOffline](images/trace_offline.png)
+Tracing DAG.
+![Tracing-DAG](images/dag.png)
 
 ## Environment setup
 
@@ -83,30 +83,30 @@ Trace Kafka down stream microservices.
        group by url emit changes;
        ```
 
-4. Create Mongodb Sink. 
+4. Create JDBC Sink. 
    1. ```
-      docker exec -it ksqldb-cli ksql http://ksqldb-server:8088
-      ```
-   2. ```
-      CREATE SINK CONNECTOR sink_result_to_db WITH (
-      'connector.class'='io.confluent.connect.jdbc.JdbcSinkConnector',
-      'connection.url'='jdbc:mysql://mysql:3306/example-db',
-      'connection.user'='example-user',
-      'connection.password'='example-pw',
-       
-      'key.converter'='org.apache.kafka.connect.storage.StringConverter',
-      'key.converter.schema.registry.url' = 'http://schema-registry:8081',
-      'value.converter'='io.confluent.connect.avro.AvroConverter',
-      'value.converter.schema.registry.url' = 'http://schema-registry:8081',
-      'topics'='T_PV_COUNT',
-       
-      'insert.mode'='upsert',
-      'fields.whitelist'='URL,URL_TXT,ED,ST,COUNT',
-      'pk.mode'='record_key',
-      'pk.fields'='URL',
-      'auto.create'='true',
-      'auto.evolve'='true'
-      );
+      curl --location --request POST 'localhost:8083/connectors' \
+      --header 'Content-Type: application/json' \
+      --data-raw '{
+          "name": "sink_result_to_db",
+          "config": {
+              "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+              "connection.url": "jdbc:mysql://mysql:3306/example-db",
+              "connection.user": "example-user",
+              "connection.password": "example-pw",
+              "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+              "key.converter.schema.registry.url": "http://schema-registry:8081",
+              "value.converter": "io.confluent.connect.avro.AvroConverter",
+              "value.converter.schema.registry.url": "http://schema-registry:8081",
+              "topics": "T_PV_COUNT",
+              "insert.mode": "upsert",
+              "fields.whitelist": "URL,URL_TXT,ED,ST,COUNT",
+              "pk.mode": "record_key",
+              "pk.fields": "URL",
+              "auto.create": "true",
+              "auto.evolve": "true"
+          }
+      }'
       ```
 5. Check streams, tables and connectors are up and running.
    1. ```
