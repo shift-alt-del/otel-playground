@@ -56,6 +56,13 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar -javaagent:/tmp/jmx_prometheus_javaagent-0.17.0.jar=9999:/tmp/metrics/prometheus/broker.yml"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=kafka"
+    volumes:
+      - ./agents/opentelemetry-javaagent.jar:/tmp/opentelemetry-javaagent.jar
+      - ./agents/jmx_prometheus_javaagent-0.17.0.jar:/tmp/jmx_prometheus_javaagent-0.17.0.jar
+      - ./metrics/:/tmp/metrics/
     depends_on:
       - zookeeper
     networks:

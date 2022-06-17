@@ -27,6 +27,17 @@ scrape_configs:
         regex: '([^:]+)(:[0-9]+)?'
         replacement: '${1}'
 
+  - job_name: "broker"
+    static_configs:
+      - targets: ["broker:9999"]
+        labels:
+          env: 'dev'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: hostname
+        regex: '([^:]+)(:[0-9]+)?'
+        replacement: '${1}'
+
   - job_name: "ksqldb-server"
     static_configs:
       - targets: ["ksqldb-server:9999"]
