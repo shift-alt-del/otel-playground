@@ -56,6 +56,11 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_OPTS: "-javaagent:/tmp/jmx_prometheus_javaagent-0.17.0.jar=9999:/tmp/metrics/prometheus/broker.yml"
+    volumes:
+      - ./agents/opentelemetry-javaagent.jar:/tmp/opentelemetry-javaagent.jar
+      - ./agents/jmx_prometheus_javaagent-0.17.0.jar:/tmp/jmx_prometheus_javaagent-0.17.0.jar
+      - ./metrics/:/tmp/metrics/
     depends_on:
       - zookeeper
     networks:
@@ -73,8 +78,17 @@ services:
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://broker:19092"
+      SCHEMA_REGISTRY_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar -javaagent:/tmp/jmx_prometheus_javaagent-0.17.0.jar=9999:/tmp/metrics/prometheus/sr.yml"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=schema-registry"
+    volumes:
+      - ./agents/opentelemetry-javaagent.jar:/tmp/opentelemetry-javaagent.jar
+      - ./agents/jmx_prometheus_javaagent-0.17.0.jar:/tmp/jmx_prometheus_javaagent-0.17.0.jar
+      - ./confluent-hub-components/:/usr/share/kafka/plugins/
+      - ./metrics/:/tmp/metrics/
     networks:
       - tracingdemo
+
   ksqldb-server:
     image: confluentinc/ksqldb-server:0.25.1
     hostname: ksqldb-server
@@ -83,8 +97,9 @@ services:
       - broker
     volumes:
       - ./agents/opentelemetry-javaagent.jar:/tmp/opentelemetry-javaagent.jar
+      - ./agents/jmx_prometheus_javaagent-0.17.0.jar:/tmp/jmx_prometheus_javaagent-0.17.0.jar
       - ./confluent-hub-components/:/usr/share/kafka/plugins/
-
+      - ./metrics/:/tmp/metrics/
     ports:
       - "8088:8088"
     environment:
@@ -111,7 +126,7 @@ services:
       KSQL_CONNECT_PLUGIN_PATH: "/usr/share/kafka/plugins"
 
       # Setup OpenTelemetry
-      KSQL_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar"
+      KSQL_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar -javaagent:/tmp/jmx_prometheus_javaagent-0.17.0.jar=9999:/tmp/metrics/prometheus/ksqldb.yml"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_RESOURCE_ATTRIBUTES: "service.name=ksql"
 
@@ -126,6 +141,14 @@ services:
       - ksqldb-server
     entrypoint: /bin/sh
     tty: true
+    volumes:
+      - ./agents/opentelemetry-javaagent.jar:/tmp/opentelemetry-javaagent.jar
+      - ./confluent-hub-components/:/usr/share/kafka/plugins/
+      - ./metrics/:/tmp/metrics/
+    environment:
+      KSQL_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=ksql-client"
     networks:
       - tracingdemo
 
@@ -142,6 +165,17 @@ services:
       MYSQL_PASSWORD: example-pw
     volumes:
       - "./mysql/custom-config.cnf:/etc/mysql/conf.d/custom-config.cnf"
+    networks:
+      - tracingdemo
+
+  mysqld-exporter:
+    image: prom/mysqld-exporter
+    hostname: mysqld_exporter
+    container_name: mysqld_exporter
+    ports:
+      - "9104:9104"
+    environment:
+      DATA_SOURCE_NAME: "root:mysql-pw@(mysql:3306)/"
     networks:
       - tracingdemo
 
@@ -179,6 +213,30 @@ services:
     networks:
       - tracingdemo
 
+  prometheus:
+    container_name: prometheus
+    hostname: prometheus
+    image: prom/prometheus:v2.1.0
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+    networks:
+      - tracingdemo
+
+  grafana:
+    container_name: grafana
+    hostname: grafana
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
+    networks:
+      - tracingdemo
 
 networks:
   tracingdemo:

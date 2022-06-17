@@ -1,19 +1,25 @@
 receivers:
-    otlp:
-        protocols:
-            grpc:
-            http:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
 exporters:
-    logging:
-        loglevel: debug
-    jaeger:
-        endpoint: jaeger:14250
-        insecure: true
+  logging:
+    loglevel: debug
+  jaeger:
+    endpoint: jaeger:14250
+    insecure: true
+
 processors:
-    batch:
+  batch:
 service:
-    pipelines:
-        traces:
-            receivers: [otlp]
-            exporters: [logging,jaeger]
-            processors: [batch]
+  pipelines:
+    traces:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ jaeger ]
+    metrics:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ logging ] # todo: javaagent also reports metrics, how to export to prometheus?
