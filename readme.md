@@ -106,18 +106,9 @@
           }
       }'
       ```
-5. Check streams, tables and connectors are up and running.
-   1. ```
-      docker exec -it ksqldb-cli ksql http://ksqldb-server:8088
-      ```
-   2. ```
-      show streams;
-      show tables;
-      show connectors;
-      ```
-6. Access http://localhost:5001/ to trigger Kafka message write.
-7. Access http://localhost:16686/ to view traces.
-8. Access http://localhost:9090/targets to view metrics on Prometheus.
+5. Access http://localhost:5001/ to trigger Kafka message write.
+6. Access http://localhost:16686/ to view traces.
+7. Access http://localhost:9090/targets to view metrics on Prometheus.
 
 ## Notes:
 
