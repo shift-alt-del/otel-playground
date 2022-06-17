@@ -78,6 +78,14 @@ services:
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://broker:19092"
+      SCHEMA_REGISTRY_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar -javaagent:/tmp/jmx_prometheus_javaagent-0.17.0.jar=9999:/tmp/metrics/prometheus/sr.yml"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=schema-registry"
+    volumes:
+      - ./agents/opentelemetry-javaagent.jar:/tmp/opentelemetry-javaagent.jar
+      - ./agents/jmx_prometheus_javaagent-0.17.0.jar:/tmp/jmx_prometheus_javaagent-0.17.0.jar
+      - ./confluent-hub-components/:/usr/share/kafka/plugins/
+      - ./metrics/:/tmp/metrics/
     networks:
       - tracingdemo
 
