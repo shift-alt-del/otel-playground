@@ -89,6 +89,43 @@ services:
     networks:
       - tracingdemo
 
+  connect:
+    image: cnfldemos/kafka-connect-datagen:0.5.0-6.2.1
+    hostname: connect
+    container_name: connect
+    depends_on:
+      - schema-registry
+    ports:
+      - "8083:8083"
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: 'broker:19092'
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: compose-connect-group
+      CONNECT_CONFIG_STORAGE_TOPIC: docker-connect-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: docker-connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: docker-connect-status
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_PLUGIN_PATH: "/usr/share/kafka/plugins,/usr/share/java,/usr/share/confluent-hub-components"
+      CONNECT_LOG4J_LOGGERS: "org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR"
+      # todo: https://github.com/shift-alt-del/otel-playground/issues/10
+      KAFKA_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=connect"
+    volumes:
+      - ./agents/opentelemetry-javaagent.jar:/tmp/opentelemetry-javaagent.jar
+      - ./agents/jmx_prometheus_javaagent-0.17.0.jar:/tmp/jmx_prometheus_javaagent-0.17.0.jar
+      - ./confluent-hub-components/:/usr/share/kafka/plugins/
+      - ./metrics/:/tmp/metrics/
+    networks:
+      - tracingdemo
+
   ksqldb-server:
     image: confluentinc/ksqldb-server:0.25.1
     hostname: ksqldb-server
