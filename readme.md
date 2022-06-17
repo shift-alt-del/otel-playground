@@ -119,6 +119,7 @@ Trace Kafka down stream microservices.
       ```
 6. Access http://localhost:5001/ to trigger Kafka message write.
 7. Access http://localhost:16686/ to view traces.
+8. Access http://localhost:9090/targets to view metrics on Prometheus.
 
 ## Notes:
 
