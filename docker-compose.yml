@@ -56,9 +56,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar -javaagent:/tmp/jmx_prometheus_javaagent-0.17.0.jar=9999:/tmp/metrics/prometheus/broker.yml"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_RESOURCE_ATTRIBUTES: "service.name=kafka"
+      KAFKA_OPTS: "-javaagent:/tmp/jmx_prometheus_javaagent-0.17.0.jar=9999:/tmp/metrics/prometheus/broker.yml"
     volumes:
       - ./agents/opentelemetry-javaagent.jar:/tmp/opentelemetry-javaagent.jar
       - ./agents/jmx_prometheus_javaagent-0.17.0.jar:/tmp/jmx_prometheus_javaagent-0.17.0.jar
@@ -82,6 +80,7 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://broker:19092"
     networks:
       - tracingdemo
+
   ksqldb-server:
     image: confluentinc/ksqldb-server:0.25.1
     hostname: ksqldb-server
@@ -119,7 +118,7 @@ services:
       KSQL_CONNECT_PLUGIN_PATH: "/usr/share/kafka/plugins"
 
       # Setup OpenTelemetry
-      KSQL_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar -javaagent:/tmp/jmx_prometheus_javaagent-0.17.0.jar=9999:/tmp/metrics/prometheus/confluent_ksql.yml"
+      KSQL_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar -javaagent:/tmp/jmx_prometheus_javaagent-0.17.0.jar=9999:/tmp/metrics/prometheus/ksqldb.yml"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_RESOURCE_ATTRIBUTES: "service.name=ksql"
 
@@ -134,6 +133,14 @@ services:
       - ksqldb-server
     entrypoint: /bin/sh
     tty: true
+    volumes:
+      - ./agents/opentelemetry-javaagent.jar:/tmp/opentelemetry-javaagent.jar
+      - ./confluent-hub-components/:/usr/share/kafka/plugins/
+      - ./metrics/:/tmp/metrics/
+    environment:
+      KSQL_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=ksql-client"
     networks:
       - tracingdemo
 
