@@ -69,8 +69,11 @@ def home():
     # send data to kafka for offline processing.
     producer.send(TOPIC_NAME, json.dumps({'url': '/'}).encode('utf-8'))
 
-    # query aggregated data.
-    data = query_database()
+    try:
+        # query aggregated data.
+        data = query_database()
+    except:
+        return "Please initialize MySQL table first. See readme file."
 
     # render to html with line chart.
     return Environment(
