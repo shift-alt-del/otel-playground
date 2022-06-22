@@ -182,6 +182,7 @@ services:
       - ./agents/opentelemetry-javaagent.jar:/tmp/opentelemetry-javaagent.jar
       - ./confluent-hub-components/:/usr/share/kafka/plugins/
       - ./metrics/:/tmp/metrics/
+      - ./init_scripts/ksql:/tmp/init_scripts/ksql
     environment:
       KSQL_OPTS: "-javaagent:/tmp/opentelemetry-javaagent.jar"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
