@@ -116,6 +116,7 @@
 - Collector forwards traces to `OTEL_EXPORTER_JAEGER_ENDPOINT=localhost:14250` by default.
 - Jaeger 6831 accepts trace directly.
 - Jaeger 6831 port must be udp, `6831:6831/udp`
+- Kafka producers/consumers are decouple, it needs context to connect between services, `./kafka_app.py` shows how to switch context.
 
 ## References:
 
