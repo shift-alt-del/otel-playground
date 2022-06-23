@@ -73,7 +73,7 @@ def home():
         data = query_database()
     except:
         print(traceback.format_exc())
-        return "Please initialize pipeline first. See readme file."
+        return "Please initialize pipeline first. See readme file.<br>Refresh this page in 1~2 seconds."
 
     # render to html with line chart.
     return Environment(

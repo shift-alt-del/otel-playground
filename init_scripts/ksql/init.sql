@@ -1,18 +1,33 @@
-create stream s_input (url string) with (
- kafka_topic='async-queue-enriched', value_format='json');
+-- create stream from topic
+CREATE STREAM S_INPUT (URL STRING) WITH (KAFKA_TOPIC='async-queue-enriched', KEY_FORMAT='KAFKA', VALUE_FORMAT='JSON');
 
-create stream s_avro with (
- key_format='avro', value_format='avro') as select * from s_input;
+-- convert data type to avro
+CREATE STREAM S_AVRO WITH (KAFKA_TOPIC='S_AVRO', KEY_FORMAT='avro', PARTITIONS=1, REPLICAS=1, VALUE_FORMAT='avro') AS SELECT *
+FROM S_INPUT S_INPUT
+EMIT CHANGES;
 
-create table t_pv_count as
-select
- url,
- as_value(windowstart) as st,
- as_value(windowend) as ed,
- count(*) as count
-from s_avro window tumbling (size 10 second)
-group by url emit changes;
+-- windowing count
+CREATE TABLE T_PV_COUNT WITH (KAFKA_TOPIC='T_PV_COUNT', PARTITIONS=1, REPLICAS=1) AS SELECT
+  S_AVRO.URL URL,
+  AS_VALUE(WINDOWSTART) ST,
+  AS_VALUE(WINDOWEND) ED,
+  COUNT(*) COUNT
+FROM S_AVRO S_AVRO
+WINDOW TUMBLING ( SIZE 10 SECONDS )
+GROUP BY S_AVRO.URL
+EMIT CHANGES;
 
-create stream s_pv_count with (kafka_topic='T_PV_COUNT', key_format='avro', value_format='avro');
+-- convert windowed table to stream
+CREATE STREAM S_PV_COUNT (ROWKEY STRING KEY, ST BIGINT, ED BIGINT, COUNT BIGINT) WITH (KAFKA_TOPIC='T_PV_COUNT', KEY_FORMAT='avro', VALUE_FORMAT='avro');
 
-create stream s_output as select rowkey, as_value(rowkey) url, st, ed, count from s_pv_count partition by rowkey;
+-- repartition
+CREATE STREAM S_OUTPUT WITH (KAFKA_TOPIC='S_OUTPUT', PARTITIONS=1, REPLICAS=1) AS SELECT
+  S_PV_COUNT.ROWKEY ROWKEY,
+  AS_VALUE(S_PV_COUNT.ROWKEY) URL,
+  S_PV_COUNT.ST ST,
+  S_PV_COUNT.ED ED,
+  S_PV_COUNT.COUNT COUNT
+FROM S_PV_COUNT S_PV_COUNT
+PARTITION BY S_PV_COUNT.ROWKEY
+EMIT CHANGES;
+
