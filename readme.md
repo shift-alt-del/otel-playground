@@ -16,17 +16,7 @@
 
 ## Environment setup
 
-1. Download javaagent jar file.
-    1. Otel java agent for trace
-       ```
-       curl -o ./agents/opentelemetry-javaagent.jar https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v1.14.0/opentelemetry-javaagent.jar
-       ```
-    3. JMX agent for metrics
-       ```
-       curl -o ./agents/jmx_prometheus_javaagent-0.17.0.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.17.0/jmx_prometheus_javaagent-0.17.0.jar
-       ```
-
-2. Install kafka-connect-jdbc connector. Check how to install
+1. Install kafka-connect-jdbc connector. Check how to install
    confluent-hub [here](https://docs.confluent.io/home/connect/confluent-hub/client.html)
     1. ```
        confluent-hub install --component-dir confluent-hub-components --no-prompt confluentinc/kafka-connect-jdbc:10.5.0
@@ -59,6 +49,13 @@
 5. Access http://localhost:5001/ to trigger Kafka message write.
 6. Access http://localhost:16686/ to view traces.
 7. Access http://localhost:9090/targets to view metrics on Prometheus.
+
+## (Optional) Update agents
+
+```
+curl -o ./agents/opentelemetry-javaagent.jar https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v1.14.0/opentelemetry-javaagent.jar
+curl -o ./agents/jmx_prometheus_javaagent-0.17.0.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.17.0/jmx_prometheus_javaagent-0.17.0.jar
+```
 
 ## Notes:
 
