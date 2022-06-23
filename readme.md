@@ -30,26 +30,21 @@
     docker-compose up -d
     ``` 
 
-[comment]: <> (2. Setup Mysql)
-[comment]: <> (   ```)
-[comment]: <> (   docker exec -i mysql mysql -uroot -pmysql-pw example-db < ./init_scripts/mysql/init.sql)
-[comment]: <> (   ```)
-
-3. Create ksqlDB pipelines
+2. Create ksqlDB pipelines
    ```
    docker exec -it ksqldb-cli ksql http://ksqldb-server:8088 -f /tmp/init_scripts/ksql/init.sql
    ```
 
-4. Create JDBC Sink.
+3. Create JDBC Sink.
    ```
    curl --location --request POST 'localhost:8083/connectors' \
    --header 'Content-Type: application/json' \
    --data @./init_scripts/connect/config_jdbc.json
    ```
 
-5. Access http://localhost:5001/ to trigger Kafka message write.
-6. Access http://localhost:16686/ to view traces.
-7. Access http://localhost:9090/targets to view metrics on Prometheus.
+4. Access http://localhost:5001/ to trigger Kafka message write.
+5. Access http://localhost:16686/ to view traces.
+6. Access http://localhost:9090/targets to view metrics on Prometheus.
 
 ## (Optional) Update agents
 
