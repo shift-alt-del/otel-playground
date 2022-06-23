@@ -196,30 +196,19 @@ services:
     networks:
       - tracingdemo
 
-  mysql:
-    image: mysql:8.0.19
-    hostname: mysql
-    container_name: mysql
+  postgres:
+    image: debezium/postgres:12
+    hostname: postgres
+    container_name: postgres
     ports:
-      - "3306:3306"
+      - "5432:5432"
     environment:
-      MYSQL_ROOT_PASSWORD: mysql-pw
-      MYSQL_DATABASE: example-db
-      MYSQL_USER: example-user
-      MYSQL_PASSWORD: example-pw
+      POSTGRES_USER: postgres-user
+      POSTGRES_PASSWORD: postgres-pw
+      POSTGRES_DB: example-db
     volumes:
-      - "./mysql/custom-config.cnf:/etc/mysql/conf.d/custom-config.cnf"
-    networks:
-      - tracingdemo
-
-  mysqld-exporter:
-    image: prom/mysqld-exporter
-    hostname: mysqld_exporter
-    container_name: mysqld_exporter
-    ports:
-      - "9104:9104"
-    environment:
-      DATA_SOURCE_NAME: "root:mysql-pw@(mysql:3306)/"
+      - ./postgres/custom-config.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
     networks:
       - tracingdemo
 

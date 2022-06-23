@@ -1,17 +1,18 @@
 import datetime
 import os
 import json
+import traceback
 
 import flask
-from mysql.connector.pooling import MySQLConnectionPool
+from psycopg2 import pool
 
 from jinja2 import Environment, FileSystemLoader
 from kafka import KafkaProducer
 from opentelemetry import trace
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
-from opentelemetry.instrumentation.mysql import MySQLInstrumentor
 from opentelemetry.instrumentation.kafka import KafkaInstrumentor
+from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import (
@@ -30,7 +31,7 @@ tracer = trace.get_tracer(__name__)
 app = flask.Flask(__name__)
 FlaskInstrumentor().instrument_app(app)
 KafkaInstrumentor().instrument()
-MySQLInstrumentor().instrument()
+Psycopg2Instrumentor().instrument()
 
 # initialize kafka topic
 TOPIC_NAME = 'async-queue'
@@ -38,21 +39,19 @@ conf = dict(bootstrap_servers=os.environ.get('DEMO_BOOTSTRAP_SERVER', 'broker:90
 create_topic_if_not_exist(conf, TOPIC_NAME)
 producer = KafkaProducer(**conf)
 
-# https://dev.mysql.com/doc/connector-python/en/connector-python-examples.html
-cnxpool = MySQLConnectionPool(
-    pool_name="mypool",
-    pool_size=10,
-    user='example-user',
-    password='example-pw',
-    host='mysql',
-    database='example-db')
+cnxpool = pool.SimpleConnectionPool(
+    1, 20, user="postgres-user",
+    password="postgres-pw",
+    host="postgres",
+    port="5432",
+    database="example-db")
 
 
 def query_database():
     data = []
-    cnx = cnxpool.get_connection()
+    cnx = cnxpool.getconn()
     cursor = cnx.cursor()
-    cursor.execute("select st, ed, count from T_PV_COUNT order by st;")
+    cursor.execute("""select "ST", "ED", "COUNT" from "S_OUTPUT" order by "ST";""")
     for (st, ed, count) in cursor.fetchall():
         data.append({
             'st': datetime.datetime.fromtimestamp(st // 1000),
@@ -60,7 +59,7 @@ def query_database():
             'count': count,
         })
     cursor.close()
-    cnx.close()
+    cnxpool.putconn(cnx)
     return data
 
 
@@ -73,7 +72,8 @@ def home():
         # query aggregated data.
         data = query_database()
     except:
-        return "Please initialize MySQL table first. See readme file."
+        print(traceback.format_exc())
+        return "Please initialize pipeline first. See readme file."
 
     # render to html with line chart.
     return Environment(

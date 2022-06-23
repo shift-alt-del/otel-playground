@@ -30,10 +30,10 @@
     docker-compose up -d
     ``` 
 
-2. Setup Mysql
-   ```
-   docker exec -i mysql mysql -uroot -pmysql-pw example-db < ./init_scripts/mysql/init.sql
-   ```
+[comment]: <> (2. Setup Mysql)
+[comment]: <> (   ```)
+[comment]: <> (   docker exec -i mysql mysql -uroot -pmysql-pw example-db < ./init_scripts/mysql/init.sql)
+[comment]: <> (   ```)
 
 3. Create ksqlDB pipelines
    ```
@@ -44,7 +44,7 @@
    ```
    curl --location --request POST 'localhost:8083/connectors' \
    --header 'Content-Type: application/json' \
-   --data @./init_scripts/connect/config.json
+   --data @./init_scripts/connect/config_jdbc.json
    ```
 
 5. Access http://localhost:5001/ to trigger Kafka message write.
