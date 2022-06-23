@@ -29,25 +29,15 @@
 2. Install kafka-connect-jdbc connector. Check how to install
    confluent-hub [here](https://docs.confluent.io/home/connect/confluent-hub/client.html)
     1. ```
-   confluent-hub install --component-dir confluent-hub-components --no-prompt confluentinc/kafka-connect-jdbc:10.5.0
-      ```
+       confluent-hub install --component-dir confluent-hub-components --no-prompt confluentinc/kafka-connect-jdbc:10.5.0
+       ```
 
 ## Services & Pipelines startup
 
-1. Bring all services up.
-    1. Start Kafka and Zookeeper
-       ```
-       docker-compose up -d broker zookeeper
-       ```
-    2. Start other services. `web` and `app1` needs to wait Kafka fully started, please run this command multiple times
-       to make sure all the services turn to `Up`.
-       ```
-       docker-compose up -d
-       ```
-    3. Check service status
-       ```
-       docker-compose ps
-       ```
+1. Start services. (It will wait Kafka Broker get fully started, it may take up to 30 seconds.)
+    ```
+    docker-compose up -d
+    ``` 
 
 2. Setup Mysql
    ```

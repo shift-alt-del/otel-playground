@@ -63,6 +63,12 @@ services:
       - ./metrics/:/tmp/metrics/
     depends_on:
       - zookeeper
+    healthcheck:
+      # Have to reset KAFKA_OPTS here, javaagent can only start once.
+      test: [ "CMD-SHELL", "KAFKA_OPTS=\"\" kafka-topics --bootstrap-server broker:19092 --list" ]
+      interval: 2s
+      timeout: 2s
+      retries: 15
     networks:
       - tracingdemo
 
@@ -231,7 +237,8 @@ services:
     environment:
       DEMO_BOOTSTRAP_SERVER: "broker:19092"
     depends_on:
-      - broker
+      broker:
+        condition: service_healthy
     networks:
       - tracingdemo
 
@@ -247,7 +254,9 @@ services:
     environment:
       DEMO_BOOTSTRAP_SERVER: "broker:19092"
     depends_on:
-      - web
+      broker:
+        condition: service_healthy
+
     networks:
       - tracingdemo
 
