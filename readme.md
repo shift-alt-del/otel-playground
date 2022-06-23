@@ -16,11 +16,12 @@
 
 ## Environment setup
 
-1. Install kafka-connect-jdbc connector. Check how to install
-   confluent-hub [here](https://docs.confluent.io/home/connect/confluent-hub/client.html)
-    1. ```
-       confluent-hub install --component-dir confluent-hub-components --no-prompt confluentinc/kafka-connect-jdbc:10.5.0
-       ```
+1. Install `kafka-connect-jdbc` connector.
+   ```
+   docker run -it -v $PWD/confluent-hub-components:/tmp/confluent-hub-components \
+   cnfldemos/kafka-connect-datagen:0.5.0-6.2.1 \
+   confluent-hub install --component-dir /tmp/confluent-hub-components --no-prompt confluentinc/kafka-connect-jdbc:10.5.0
+   ```
 
 ## Services & Pipelines startup
 
