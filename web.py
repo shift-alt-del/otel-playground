@@ -51,7 +51,7 @@ def query_database():
     data = []
     cnx = cnxpool.getconn()
     cursor = cnx.cursor()
-    cursor.execute("""select "ST", "ED", "COUNT" from "S_OUTPUT" order by "ST";""")
+    cursor.execute("""select "ST", "ED", "COUNT" from "T_PV_COUNT" order by "ST";""")
     for (st, ed, count) in cursor.fetchall():
         data.append({
             'st': datetime.datetime.fromtimestamp(st // 1000),
@@ -84,3 +84,6 @@ def home():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)
+
+# todo: add another api to trigger trace without windowed table -> stream. (Sink windowed table by value)
+# todo: add error endpoint to show error trace.
