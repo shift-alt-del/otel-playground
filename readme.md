@@ -45,6 +45,7 @@
 4. Access http://localhost:5001/ to trigger Kafka message write.
 5. Access http://localhost:16686/ to view traces.
 6. Access http://localhost:9090/targets to view metrics on Prometheus.
+7. Access http://localhost:3000 to view metrics on Grafana.
 
 ## (Optional) Update agents
 
