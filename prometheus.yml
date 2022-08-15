@@ -18,7 +18,7 @@ scrape_configs:
     static_configs:
       - targets: ["prometheus:9090"]
 
-  - job_name: "broker"
+  - job_name: "kafka-broker"
     static_configs:
       - targets: ["broker:9999"]
         labels:

@@ -7,7 +7,7 @@
 - [x] Trace ksqlDB/Kafka-Stream.
 - [x] Trace Kafka Connect.
 - [x] Trace full end-to-end: API -> Kafka -> Python App -> KsqlDB -> Connect.
-- [ ] Metric (Kafka, API, Mysql, ksqlDB).
+- [x] Metric (Kafka broker, check more grafana dashboard [here](https://github.com/confluentinc/jmx-monitoring-stacks/tree/7.2-post/jmxexporter-prometheus-grafana/assets/grafana/provisioning/dashboards).)
 - [ ] Log
 
 |End-to-end tracing, API to Connect.|Tracing DAG.|
@@ -70,3 +70,4 @@ curl -o ./agents/jmx_prometheus_javaagent-0.17.0.jar https://repo1.maven.org/mav
 - https://confluent.io/blog/monitor-kafka-clusters-with-prometheus-grafana-and-confluent/
 - https://github.com/prometheus/jmx_exporter
 - https://github.com/prometheus/mysqld_exporter
+- https://github.com/confluentinc/jmx-monitoring-stacks/tree/7.2-post/jmxexporter-prometheus-grafana/assets/grafana/provisioning/dashboards
